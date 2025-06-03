@@ -1,75 +1,59 @@
 #pragma once
-
-
 // ESP32 Rover Configuration Header File
 // This file contains configuration settings for the ESP32 Rover project.
 // It includes definitions for pin assignments, motor control, encoder settings, and serial communication commands.
 
+// -------------------- Pin Assignments --------------------
+// The pin numbers are based on the ESP32 DevKitC board.
+// Adjust these if using a different ESP32 board.  
+#define LEFT_ENC_A 23                        // Left encoder channel A       
+#define LEFT_ENC_B 22                        // Left encoder channel B             
+#define RIGHT_ENC_A 21                       // Right encoder channel A
+#define RIGHT_ENC_B 19                       // Right encoder channel B
+#define LEFT_MOTOR_ENABLE_PIN 5              // Left motor enable (must be HIGH during boot)
+#define RIGHT_MOTOR_ENABLE_PIN 17            // Right motor enable
+#define LEFT_MOTOR_FORWARD_IN1_PIN 16        // Left motor forward control  
+#define LEFT_MOTOR_REVERSE_IN2_PIN 4         // Left motor reverse control
+#define RIGHT_MOTOR_FORWARD_IN3_PIN 2        // Right motor forward control (must be LOW during boot, also on-board LED)
+#define RIGHT_MOTOR_REVERSE_IN4_PIN 15       // Right motor reverse control (must be HIGH during boot, prevents startup log if LOW)
+                 
+// -------------------- Feature Toggles --------------------
+// Comment out to disable specific features for smaller builds or debugging
+#define ENABLE_ENCODERS   // Comment out to disable encoder support
+#define ENABLE_MOTORS      // Comment out to disable motor support
+#define ENABLE_CONTROLLER  // Comment out to disable PID controller support
 
-// Pin assignments for the ESP32 Rover :                               
-// The pin numbers are based on the ESP32 DevKitC board.               
-// The pin numbers may vary based on the specific ESP32 board used.    
-
-
-#define LEFT_ENC_A 23                     
-#define LEFT_ENC_B 22                     
-//#define UNUSED 1                        //(Tx pin, used for flashing and debugging - DONT USE FOR OTHER PURPOSES)
-//#define UNUSED 3                        //(Rx pin, used for flashing and debugging - DONT USE FOR OTHER PURPOSES)
-#define RIGHT_ENC_A 21            
-#define RIGHT_ENC_B 19              
-//#define UNUSED 18   
-#define LEFT_MOTOR_ENABLE_PIN 5          //(must be HIGH during boot)
-#define RIGHT_MOTOR_ENABLE_PIN 17    
-#define RIGHT_MOTOR_FORWARD_IN1_PIN 16     
-#define RIGHT_MOTOR_REVERSE_IN2_PIN 4      
-#define LEFT_MOTOR_FORWARD_IN3_PIN 2                        //(must be LOW during boot and also connected to the on-board LED)
-#define LEFT_MOTOR_REVERSE_IN4_PIN 15          //(must be HIGH during boot, prevents startup log if pulled LOW)
-
-//#define UNUSED 36                       //(Input only GPIO, cannot be configured as output)
-//#define UNUSED 39                       //(Input only GPIO, cannot be configured as output)
-//#define UNUSED 34                       //(Input only GPIO, cannot be configured as output)
-//#define UNUSED 35                       //(Input only GPIO, cannot be configured as output)
-//#define UNUSED 32                       
-//#define UNUSED 33                       
-//#define UNUSED 25                       
-//#define UNUSED 26                      
-//#define UNUSED 27                     
-//#define UNUSED 14                      
-//#define UNUSED 12                       //(must be LOW during boot)
-//#define UNUSED 13                     
-
-
-
-
-
-
+// -------------------- Timing Settings --------------------
 #define AUTO_STOP_INTERVAL   2000
 #define PID_INTERVAL          30
 
-
+// -------------------- Serial Communication Settings --------------------
 #define BAUDRATE           115200
 #define MAX_ARG_LENGTH         16
-#define LEFT                    0
-#define RIGHT                   1
 
-//PWM SETTINGS
-#define PWM_FREQ                    5000
-#define RESOLUTION                     8
-#define MAX_PWM                      255  
-#define RIGHT_PWM_CHANNEL              0
-#define LEFT_PWM_CHANNEL               1
+// -------------------- Motor and Encoder Constants --------------------
+#define LEFT                    0  // Index for left motor/encoder
+#define RIGHT                   1  // Index for right motor/encoder
 
-// SERIAL COM COMMANDS
-#define ANALOG_READ    'a'
-#define GET_BAUDRATE   'b'
-#define PIN_MODE       'p'
-#define DIGITAL_READ   'd'
-#define READ_ENCODERS  'e'
-#define MOTOR_SPEEDS   'm'
-#define MOTOR_RAW_PWM  'o'
-#define RESET_ENCODERS 'r'
-#define UPDATE_PID     'u'
-#define DIGITAL_WRITE  'w'
-#define ANALOG_WRITE   'x'
-#define ECHO           'Y'
-#define ERROR          '!'
+// -------------------- PWM Settings --------------------
+#define PWM_FREQ                    5000 // PWM frequency in Hz
+#define RESOLUTION                     8 // PWM resolution in bits
+#define MAX_PWM                      255 // Maximum PWM value (for 8-bit resolution)
+#define RIGHT_PWM_CHANNEL              0 // PWM channel for right motor
+#define LEFT_PWM_CHANNEL               1 // PWM channel for left motor
+
+// -------------------- Serial Command Characters --------------------
+// Used for parsing incoming serial commands
+#define ANALOG_READ    'a'  // Analog read command
+#define GET_BAUDRATE   'b'  // Get current baud rate
+#define PIN_MODE       'p'  // Set pin mode
+#define DIGITAL_READ   'd'  // Digital read command
+#define READ_ENCODERS  'e'  // Read encoder values
+#define MOTOR_SPEEDS   'm'  // Set motor speeds
+#define MOTOR_RAW_PWM  'o'  // Set raw PWM values
+#define RESET_ENCODERS 'r'  // Reset encoder counts
+#define UPDATE_PID     'u'  // Update PID parameters
+#define DIGITAL_WRITE  'w'  // Digital write command
+#define ANALOG_WRITE   'x'  // Analog write command
+#define ECHO           'Y'  // Echo command for testing
+#define ERROR          '!'  // Error indicator

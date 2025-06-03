@@ -35,7 +35,7 @@ void pinControl::writeDigital(int pin, int value) {
 
 void pinControl::writeAnalog(int pin, int value) {
     if (!validOutputPin(pin)) return;
-    
+    analogWrite(pin, value);
 }
 
 int pinControl::readDigital(int pin) {

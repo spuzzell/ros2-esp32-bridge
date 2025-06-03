@@ -14,6 +14,43 @@ void serialParser::init2(){
     #endif
 }
 
+bool serialParser::isEndLine(char c) {
+    return (c == '\r' || c == '\n');
+}
+
+bool serialParser::isDelimiter(char c) {
+    return (c == ' ' || c == ',');
+}
+
+static bool convertstr2num(const char* argv, long &arg, SerialCommand &outCmd){
+    char *endptr1 = nullptr;
+    arg=0;
+
+    arg = strtol(argv, &endptr1, 10);
+    if (*endptr1 != '\0') {
+        outCmd.error = SerialError::ARG_NOT_NUMERIC;
+        outCmd.valid = false;
+        return false;
+        }
+    return true;
+}
+
+void serialParser::fillCmd(SerialCommand &outCmd){
+    outCmd.cmd = cmd;
+    outCmd.arg1 = arg1;
+    outCmd.arg2 = arg2;
+    outCmd.error = SerialError::NONE;
+    reset();
+}
+
+void serialParser::clearCmd(SerialCommand &outCmd){
+    outCmd.cmd = '\0';
+    outCmd.arg1 = 0;
+    outCmd.arg2 = 0;
+    reset();
+}
+
+
 
 //--------------------------------------------------------------
 // Reads and parses incoming serial data, then executes commands
@@ -22,57 +59,39 @@ bool serialParser::poll(SerialCommand &outCmd, Stream &input){
         serialCommandChar = input.read(); // Read next character
 
         // If end-of-line received, finalize arguments and execute command
-        if (serialCommandChar == '\r' || serialCommandChar == '\n'){
+        if (isEndLine(serialCommandChar)){
             if (argCount == 1) argv1[argIndex] = '\0'; // Null-terminate first argument
             else if (argCount == 2) argv2[argIndex] = '\0'; // Null-terminate second argument
 
-            if (cmdComplete && isValidCommand(cmd) && !errorStateOverFlow) {
-                char *endptr1 = nullptr;
-                char *endptr2 = nullptr;
-                arg1 = 0;
-                arg2 = 0;
-                
-                if (argCount >= 1 && argv1[0] != '\0') {
-                    arg1 = strtol(argv1, &endptr1, 10);
-                    if (*endptr1 != '\0') {
-                        outCmd.error = SerialError::ARG2_NOT_NUMERIC;
-                        outCmd.valid = false;
+            if (cmdComplete && outCmd.valid) {
+
+                if (argCount >= 1 && argv1[0] != '\0'){
+                    if(!convertstr2num(argv1, arg1, outCmd)){
                         reset();
                         return false;
                     }
                 }
 
-                if (argCount == 2 && argv2[0] != '\0') {
-                    arg2 = strtol(argv2, &endptr2, 10);
-                    if (*endptr2 != '\0') {
-                        outCmd.error = SerialError::ARG2_NOT_NUMERIC;
-                        outCmd.valid = false;
+                if (argCount >= 2 && argv2[0] != '\0'){
+                    if(!convertstr2num(argv2, arg2, outCmd)){
                         reset();
                         return false;
                     }
                 }
 
-                outCmd.cmd = cmd;
-                outCmd.arg1 = arg1;
-                outCmd.arg2 = arg2;
-                outCmd.valid = true;
-                outCmd.error = SerialError::NONE;
-                reset();
+                fillCmd(outCmd);
                 return true;
+
             }
             else{
-                outCmd.cmd = '\0';
-                outCmd.arg1 = 0;
-                outCmd.arg2 = 0;
-                outCmd.valid = false;
-                if(!errorStateOverFlow) outCmd.error = SerialError::INVALID_COMMAND;
-                reset();
+                clearCmd(outCmd);
                 return false;
             }
         }
 
         // If space or comma, move to next argument
-        else if (serialCommandChar == ' '|| serialCommandChar == ',') {
+        else if (isDelimiter(serialCommandChar) && outCmd.valid && delimToggle) {
+            delimToggle=false;
             if (argCount == 0) argCount = 1; // Start first argument
             else if (argCount == 1)  {
                 argv1[argIndex] = '\0'; // Null-terminate first argument
@@ -80,38 +99,37 @@ bool serialParser::poll(SerialCommand &outCmd, Stream &input){
                 argIndex = 0;           // Reset index for argv2
             }
             continue;
-        }
-
-        // Otherwise, parse command and arguments
-        else{
-            // First character is the command
-            if (argCount == 0 && serialCommandChar != ' ' && cmdComplete== false) {
+        }else{
+            if (argCount == 0 && serialCommandChar != ' ' && cmdComplete==false) {
+                
                 cmd = serialCommandChar;
+                if(!isValidCommand(cmd)){
+                    outCmd.valid = false;
+                    outCmd.error = SerialError::INVALID_COMMAND;
+                }
                 cmdComplete = true;
-            }
-            // Fill first argument buffer
-            else if (argCount == 1 && !errorStateOverFlow)
+                delimToggle=true;
+
+            }else if (argCount == 1 && outCmd.valid){
+                delimToggle=true;
                 if(argIndex < MAX_ARG_LENGTH - 1) {
                     argv1[argIndex++] = serialCommandChar;
                 } else {
-                    outCmd.error = SerialError::ARG1_TOO_LONG;
+                    outCmd.error = SerialError::ARG_OVERFLOW;
                     outCmd.valid = false;
-                    errorStateOverFlow=true;
-            }
-            // Fill second argument buffer
-            else if (argCount == 2 && !errorStateOverFlow) {
+                }
+            }else if (argCount == 2 && outCmd.valid) {
+                delimToggle=true;
                 if (argIndex < MAX_ARG_LENGTH - 1) {
                     argv2[argIndex++] = serialCommandChar;
                 } else {
-                    outCmd.error = SerialError::ARG1_TOO_LONG;
+                    outCmd.error = SerialError::ARG_OVERFLOW;
                     outCmd.valid = false;
-                    errorStateOverFlow=true;
                 }
             }
-
         }
     }
-
+    reset();
     return false;
 }
 
@@ -121,11 +139,13 @@ void serialParser::reset(){
     cmd = '\0';
     serialCommandChar = '\0';
     cmdComplete = false;
+    arg1 =0;
+    arg2 =0;
     memset(argv1, 0, sizeof(argv1));
     memset(argv2, 0, sizeof(argv2));
     argCount = 0;
     argIndex = 0;
-    errorStateOverFlow = false;
+    delimToggle = true;
 }
 
 bool isValidCommand(char c) {

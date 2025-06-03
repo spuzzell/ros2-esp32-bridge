@@ -86,7 +86,10 @@ class serialParser
     char cmd = '\0';                
 
     // True if a command character has been fully received
-    bool cmdComplete = false;        
+    bool cmdComplete = false;       
+    
+    // True if a command character has been fully received
+    bool delimToggle = true; 
 
     // Buffers for the first and second command arguments (as strings)
     char argv1[MAX_ARG_LENGTH];
@@ -95,9 +98,6 @@ class serialParser
     // Parsed numeric values of argv1 and argv2
     long arg1;
     long arg2;
-
-
-    bool errorStateOverFlow = false;
 
     /**
      * @brief Initializes the serial port (called once internally).
@@ -109,6 +109,8 @@ class serialParser
      */
     void reset();
 
-
-
+    bool isEndLine(char c);
+    bool isDelimiter(char c);
+    void fillCmd(SerialCommand &outCmd);
+    void clearCmd(SerialCommand &outCmd);
 };
