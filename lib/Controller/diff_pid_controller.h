@@ -18,7 +18,7 @@ private:
     int prevInput;
     int iTerm;
     long output;
-    int Kp, Kd, Ki, Ko;
+    float Kp, Kd, Ki, Ko;
     void runPID();
 };
 

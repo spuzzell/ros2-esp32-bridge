@@ -1,7 +1,5 @@
-#ifndef TEST_DESKTOP
-#include <Arduino.h>
-#endif
 
+#include <Arduino.h>
 #include "config.h"
 #include "serial_parser.h"
 #include "serial_command.h"
@@ -48,6 +46,38 @@ void serialParser::clearCmd(SerialCommand &outCmd){
     outCmd.arg1 = 0;
     outCmd.arg2 = 0;
     reset();
+}
+
+bool serialParser::allClear(Stream &input){
+    if(input.read()==ALL_CLEAR){
+        flushCmdBuffer();
+        reset();
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+void serialParser::flushCmdBuffer(SerialCommand &outCmd, Stream &input){
+    // Clear all incoming data from the serial buffer
+    while (input.available()) {
+        input.read();
+    }
+    // Reset the output command structure and parser state
+    clearCmd(outCmd);
+    reset();
+    return;
+}
+
+void serialParser::flushCmdBuffer(Stream &input){
+    // Clear all incoming data from the serial buffer
+    while (input.available()) {
+        input.read();
+    }
+    // Reset the output command structure and parser state
+    reset();
+    return;
 }
 
 

@@ -1,12 +1,7 @@
 #pragma once
 #include "config.h"
+#include <Arduino.h>
 
-// Use fake pin control for native (desktop) testing, otherwise use Arduino
-#if defined(TEST_DESKTOP)
-    #include "fakeduino.h"   
-#else
-    #include <Arduino.h>
-#endif
 
 
 

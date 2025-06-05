@@ -2,17 +2,12 @@
 #include "diff_pid_controller.h"
 #include "encoder_driver.h"
 #include "motor_driver.h"
+#include <Arduino.h>
 
-#ifndef TEST_DESKTOP
-    #include <Arduino.h>
-#endif
 
 extern roverEncoders encoders;
 extern roverMotors motors;
 extern long lastMotorCommand;
-
-
-
 
 
 void diffController::reset(){
@@ -50,7 +45,7 @@ void diffController::update(){
 }
 
 PIDController::PIDController(int motorID)
-    : motorID(motorID), Kp(20), Kd(20), Ki(0), Ko(50) {
+    : motorID(motorID), Kp(20.0), Kd(20.0), Ki(0.0), Ko(50.0) {
     reset();
 }
 

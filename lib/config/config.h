@@ -19,13 +19,15 @@
                  
 // -------------------- Feature Toggles --------------------
 // Comment out to disable specific features for smaller builds or debugging
-#define ENABLE_ENCODERS   // Comment out to disable encoder support
-#define ENABLE_MOTORS      // Comment out to disable motor support
-#define ENABLE_CONTROLLER  // Comment out to disable PID controller support
+#define ENABLE_ENCODERS        // Comment out to disable encoder support
+#define ENABLE_MOTORS          // Comment out to disable motor support
+#define ENABLE_CONTROLLER      // Comment out to disable PID controller support
+#define ENABLE_PIN_CONTROL     // Comment out to disable read, write and pin mode change capability
+#define ENABLE_ERROR_MESSAGES  // Comment out to desable error messages  
 
 // -------------------- Timing Settings --------------------
-#define AUTO_STOP_INTERVAL   2000
-#define PID_INTERVAL          30
+#define AUTO_STOP_INTERVAL   2000   // Auto-stop motors and other modules if no command received in AUTO_STOP_INTERVAL milliseconds
+#define PID_INTERVAL          30    // Periodically update PID controller every PID_INTERVAL milliseconds
 
 // -------------------- Serial Communication Settings --------------------
 #define BAUDRATE           115200
@@ -57,3 +59,15 @@
 #define ANALOG_WRITE   'x'  // Analog write command
 #define ECHO           'Y'  // Echo command for testing
 #define ERROR          '!'  // Error indicator
+
+// -------------------- Safety Serial Command Characters ---------------------
+// --------------------------------- WARNING ---------------------------------
+// #define EMERGENCY_STOP 'Z' will trigger a stop state that halts all actions and requires 
+// a restart to recover or a ALL_CLEAR command.
+// When received, the firmware returns to start of loop() before code execution, effectively
+// pausing the system.
+// EMERGENCY_STOP also sets all modules that could cause harm to a stop state (e.g. motors). 
+// If you add new modules that need to be stopped during emergency, include their stop logic 
+// in the if(emergencyStop) block in main.cpp.
+#define EMERGENCY_STOP 'Z'
+#define ALL_CLEAR      'C' // Clears the EMERGENCY_STOP state and resumes normal opperation

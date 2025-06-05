@@ -1,16 +1,12 @@
 #include "config.h"
-
-#if defined(TEST_DESKTOP)
-    #include "fakeduino.h"   
-#else
-    #include <Arduino.h>
-    #include <esp_attr.h>
-#endif
-
+#include <Arduino.h>
 #include "encoder_driver.h"
 
-
-
+#ifndef TEST_DESKTOP
+#include <esp_attr.h>
+#else
+#include "fake_esp_attr.h"
+#endif
 
 // Encoder position and state variables
 volatile long left_enc_pos = 0L;
@@ -71,8 +67,11 @@ long roverEncoders::getCountsAndReset(int i) {
  * @return The current encoder count
  */
 long roverEncoders::readEncoder(int i) {
-  if (i == LEFT) return left_enc_pos;
-  else return right_enc_pos;
+  long value;
+  noInterrupts();
+  value = (i == LEFT) ? left_enc_pos : right_enc_pos;
+  interrupts();
+  return value;
 }
 
 /**
@@ -96,4 +95,4 @@ void roverEncoders::transmit(){
         Serial.print(readEncoder(LEFT));
         Serial.print(" ");
         Serial.println(readEncoder(RIGHT));
-    };
+    }

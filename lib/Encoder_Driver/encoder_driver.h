@@ -2,8 +2,9 @@
 
 #ifndef TEST_DESKTOP
 #include <esp_attr.h>
+#else
+#include "fake_esp_attr.h"
 #endif
-
 
 void IRAM_ATTR leftEncoderISR();
 

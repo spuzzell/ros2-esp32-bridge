@@ -27,10 +27,8 @@
 #pragma once
 #include "config.h"
 #include "serial_command.h"
+#include <Arduino.h>
 
-#ifndef TEST_DESKTOP
-#include <Stream.h>
-#endif
 
 /**
  * @brief Checks if a character is a valid command.
@@ -70,6 +68,10 @@ class serialParser
      * @return true if a complete command was parsed, false otherwise.
      */
     bool poll(SerialCommand &outCmd, Stream &input = Serial);
+
+    void flushCmdBuffer(SerialCommand &outCmd, Stream &input = Serial);
+    void flushCmdBuffer(Stream &input = Serial);
+    bool allClear(Stream &input=Serial);
 
 
     private:
