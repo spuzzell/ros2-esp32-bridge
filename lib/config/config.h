@@ -6,8 +6,8 @@
 // -------------------- Pin Assignments --------------------
 // The pin numbers are based on the ESP32 DevKitC board.
 // Adjust these if using a different ESP32 board.  
-#define LEFT_ENC_A 23                        // Left encoder channel A       
-#define LEFT_ENC_B 22                        // Left encoder channel B             
+#define LEFT_ENC_B 23                        // Left encoder channel A       
+#define LEFT_ENC_A 22                        // Left encoder channel B             
 #define RIGHT_ENC_A 21                       // Right encoder channel A
 #define RIGHT_ENC_B 19                       // Right encoder channel B
 #define LEFT_MOTOR_ENABLE_PIN 5              // Left motor enable (must be HIGH during boot)

@@ -8,32 +8,43 @@
 #include "fake_esp_attr.h"
 #endif
 
-// Encoder position and state variables
-volatile long left_enc_pos = 0L;
-volatile long right_enc_pos = 0L;
-volatile long left_enc_state = 0;
-volatile long right_enc_state = 0;
-static const int8_t ENC_STATES [] = {0,1,-1,0,-1,0,0,1,1,0,0,-1,0,-1,1,0};
 
-/**
- * @brief Interrupt Service Routine for the left encoder.
- *        Updates the left encoder's state and position based on pin changes.
- */
-void IRAM_ATTR leftEncoderISR() { 
-  left_enc_state <<= 2;
-  left_enc_state |= ((digitalRead(LEFT_ENC_A) << 1) | digitalRead(LEFT_ENC_B));
-  left_enc_pos += ENC_STATES[left_enc_state & 0x0F];
+volatile long encoderPulseLeft  = 0L;
+volatile long encoderPulseRight = 0L;
+static const int ENC_STATES [] = {0,-1,1,2,1,0,2,-1,-1,2,0,1,2,1,-1,0};
+
+volatile int encPos_Left      = 0;
+volatile int lastEncPos_Left  = 0;
+volatile int encPos_Right     = 0;
+volatile int lastEncPos_Right = 0;
+
+
+void IRAM_ATTR ISR_encoder_left(){
+  lastEncPos_Left=encPos_Left;
+  int MSB = (GPIO.in >> LEFT_ENC_A) & 0x1;
+  int LSB = (GPIO.in >> LEFT_ENC_B) & 0x1;
+  encPos_Left = (MSB << 1) | LSB;
+  if(ENC_STATES[lastEncPos_Left * 4 + encPos_Left]!=2) encoderPulseLeft+=ENC_STATES[lastEncPos_Left * 4 + encPos_Left];
 }
 
-/**
- * @brief Interrupt Service Routine for the right encoder.
- *        Updates the right encoder's state and position based on pin changes.
- */
-void IRAM_ATTR rightEncoderISR() {
-  right_enc_state <<= 2;
-  right_enc_state |= ((digitalRead(RIGHT_ENC_A) << 1) | digitalRead(RIGHT_ENC_B));
-  right_enc_pos += ENC_STATES[right_enc_state & 0x0F];
+void IRAM_ATTR ISR_encoder_right(){
+  lastEncPos_Right=encPos_Right;
+  int MSB = (GPIO.in >> RIGHT_ENC_A) & 0x1;
+  int LSB = (GPIO.in >> RIGHT_ENC_B) & 0x1;
+  encPos_Right = (MSB << 1) | LSB;
+  if(ENC_STATES[lastEncPos_Right * 4 + encPos_Right]!=2) encoderPulseRight-=ENC_STATES[lastEncPos_Right * 4 + encPos_Right];
 }
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief Initializes the encoder pins and attaches interrupts for both encoders.
@@ -44,10 +55,10 @@ void roverEncoders::init2() {
   pinMode(RIGHT_ENC_A,INPUT_PULLUP);
   pinMode(RIGHT_ENC_B,INPUT_PULLUP);
 
-  attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), leftEncoderISR, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(LEFT_ENC_B), leftEncoderISR, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A), rightEncoderISR, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_B), rightEncoderISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), ISR_encoder_left, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LEFT_ENC_B), ISR_encoder_left, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A), ISR_encoder_right, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_B), ISR_encoder_right, CHANGE);
 }
 
 /**
@@ -69,18 +80,20 @@ long roverEncoders::getCountsAndReset(int i) {
 long roverEncoders::readEncoder(int i) {
   long value;
   noInterrupts();
-  value = (i == LEFT) ? left_enc_pos : right_enc_pos;
+  value = (i == LEFT) ? encoderPulseLeft : encoderPulseRight;
   interrupts();
   return value;
 }
+
+
 
 /**
  * @brief Resets the count of the specified encoder to zero.
  * @param i Index of the encoder (LEFT or RIGHT)
  */
 void roverEncoders::resetEncoder(int i) {
-  if (i == LEFT) left_enc_pos = 0L;
-  else right_enc_pos = 0L;
+  if (i == LEFT) encoderPulseLeft = 0L;
+  else encoderPulseRight = 0L;
 }
 
 /**
@@ -96,3 +109,18 @@ void roverEncoders::transmit(){
         Serial.print(" ");
         Serial.println(readEncoder(RIGHT));
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  

@@ -11,6 +11,10 @@ void IRAM_ATTR leftEncoderISR();
 
 void IRAM_ATTR rightEncoderISR();
 
+void IRAM_ATTR lefthandleEncoder();
+
+void IRAM_ATTR righthandleEncoder();
+
 /**
  * @class roverEncoders
  * @brief Provides static methods for initializing and reading quadrature encoders.

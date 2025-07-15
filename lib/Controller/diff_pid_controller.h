@@ -1,6 +1,6 @@
 #pragma once
 #include "config.h"
-
+#include <Arduino.h>
 
 class PIDController {
 public:
@@ -36,7 +36,7 @@ class diffController
     PIDController rightPID;
     bool moving;
     unsigned long nextPID;
-    diffController() : leftPID(LEFT), rightPID(RIGHT), moving(false), nextPID(0) {}
+    diffController() : leftPID(LEFT), rightPID(RIGHT), moving(false), nextPID(millis()+PID_INTERVAL) {}
     void reset();
     void update(int leftTarget, int rightTarget);
     void update();

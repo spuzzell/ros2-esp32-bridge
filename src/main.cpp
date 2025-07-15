@@ -21,8 +21,6 @@
  *  - Upload to ESP32 and communicate via serial.
  */
 
-
-
 #include <Arduino.h>
 #include "config.h"
 
@@ -91,6 +89,7 @@ void loop(){
     // Poll for new serial command
     if (parser.poll(cmd)) {
         if (cmd.valid) {
+            Serial.println(cmd.cmd);
             // If emergency stop command received, set flag and exit loop iteration
             if (cmd.cmd == EMERGENCY_STOP) {
                 emergencyStop = true; 
@@ -108,14 +107,18 @@ void loop(){
 #ifdef ENABLE_CONTROLLER
     // Periodically update PID controller based on PID_INTERVAL set via config
     if (millis() > controller.getNextPID()) {
-        controller.update();
+      controller.update();
         controller.writeNextPID(controller.getNextPID() + PID_INTERVAL);
     }
-#endif    
+#endif
+
 #ifdef ENABLE_MOTORS
     // Auto-stop motors if no command received recently based on AUTO_STOP_INTERVAL set via config
     if ((millis() - executor.lastMotorCommand) > AUTO_STOP_INTERVAL)
         motors.setMotorSpeeds(0, 0);
+        #ifdef ENABLE_CONTROLLER
+        controller.reset();
+        #endif
 #endif
 
 }

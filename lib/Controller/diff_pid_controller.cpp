@@ -44,6 +44,16 @@ void diffController::update(){
     rightPID.update();
 }
 
+
+
+
+
+
+
+
+
+
+
 PIDController::PIDController(int motorID)
     : motorID(motorID), Kp(20.0), Kd(20.0), Ki(0.0), Ko(50.0) {
     reset();
@@ -69,8 +79,7 @@ void PIDController::setMoving(bool state){
 
 void PIDController::update() {
     encVal=encoders.readEncoder(motorID);
-
-    if(moving){
+    if(!moving){
         if(prevInput !=0) reset();
         return;
     }
